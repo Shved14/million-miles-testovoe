@@ -12,6 +12,15 @@ class Settings(BaseSettings):
 
     cors_allow_origins: str = "*"
 
+    parser_enabled: bool = True
+    parser_schedule_cron: str = "0 3 * * *"
+    parser_list_url: str = "https://www.encar.com/"
+    parser_user_agent: str = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:
