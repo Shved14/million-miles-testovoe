@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d million_miles" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   backend:
     build:
@@ -16,30 +21,31 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/million_miles
       CORS_ALLOW_ORIGINS: http://localhost:3000
+      PARSER_ENABLED: "true"
+      PARSER_SCHEDULE_CRON: "0 3 * * *"
+      PARSER_LIST_URL: https://www.encar.com/
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
+    healthcheck:
+      test: [ "CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()\"" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
   frontend:
     build:
       context: ./frontend
     environment:
+      API_BASE_URL: http://backend:8000
       NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "3000:3000"
-
-  parser:
-    build:
-      context: ./parser
-    environment:
-      API_BASE_URL: http://backend:8000
-      RUN_HEADLESS: "true"
-      SCHEDULE_CRON: "0 3 * * *"
-    depends_on:
-      - backend
 
 volumes:
   postgres_data:
