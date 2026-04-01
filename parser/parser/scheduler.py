@@ -1,26 +1,29 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
+import asyncio
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from parser.config import ParserSettings
 from parser.encar_scraper import scrape_encar
-from parser.sink_api import push_to_api
+from parser.sink_api import save_to_db
 
 
-def run_once() -> int:
+async def run_once() -> int:
     settings = ParserSettings()
-    cars = scrape_encar(settings=settings)
-    return push_to_api(api_base_url=settings.api_base_url, cars=cars)
+    cars = await scrape_encar(settings=settings)
+    return await save_to_db(api_base_url=settings.api_base_url, cars=cars)
 
 
-def run_scheduler() -> None:
+async def run_scheduler() -> None:
     settings = ParserSettings()
 
-    scheduler = BlockingScheduler(timezone="UTC")
+    scheduler = AsyncIOScheduler(timezone="UTC")
     trigger = CronTrigger.from_crontab(settings.schedule_cron)
 
-    def job():
-        cars = scrape_encar(settings=settings)
-        push_to_api(api_base_url=settings.api_base_url, cars=cars)
+    async def job():
+        cars = await scrape_encar(settings=settings)
+        await save_to_db(api_base_url=settings.api_base_url, cars=cars)
 
     scheduler.add_job(job, trigger=trigger, id="encar_daily")
     scheduler.start()
+    await asyncio.Event().wait()

@@ -1,12 +1,16 @@
-import requests
-
 from parser.config import CarPayload
 
+import httpx
 
-def push_to_api(api_base_url: str, cars: list[CarPayload]) -> int:
+
+async def save_to_db(api_base_url: str, cars: list[CarPayload]) -> int:
     created = 0
-    for car in cars:
-        resp = requests.post(f"{api_base_url}/cars", json=car.model_dump(), timeout=30)
-        resp.raise_for_status()
-        created += 1
+    async with httpx.AsyncClient(base_url=api_base_url, timeout=30) as client:
+        for car in cars:
+            try:
+                resp = await client.post("/cars", json=car.model_dump())
+                resp.raise_for_status()
+                created += 1
+            except Exception:
+                continue
     return created

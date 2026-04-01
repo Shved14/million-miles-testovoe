@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 
 from parser.scheduler import run_once, run_scheduler
 
@@ -9,11 +10,11 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.once:
-        created = run_once()
+        created = asyncio.run(run_once())
         print(f"Created: {created}")
         return
 
-    run_scheduler()
+    asyncio.run(run_scheduler())
 
 
 if __name__ == "__main__":
