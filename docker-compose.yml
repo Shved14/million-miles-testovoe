@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: million_miles
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/million_miles
+      CORS_ALLOW_ORIGINS: http://localhost:3000
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+  parser:
+    build:
+      context: ./parser
+    environment:
+      API_BASE_URL: http://backend:8000
+      RUN_HEADLESS: "true"
+      SCHEDULE_CRON: "0 3 * * *"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
