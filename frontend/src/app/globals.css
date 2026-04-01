@@ -7,6 +7,32 @@
 }
 
 body {
-  background: #0b0f19;
+  background: radial-gradient(1200px circle at 10% 0%, rgba(99, 102, 241, 0.18), transparent 40%),
+    radial-gradient(900px circle at 90% 10%, rgba(16, 185, 129, 0.14), transparent 45%),
+    #070a12;
   color: #e5e7eb;
+}
+
+.mm-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mm-skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.11) 45%,
+      rgba(255, 255, 255, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: mm-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes mm-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
